@@ -1,0 +1,35 @@
+---
+# tasks file for panxatony.x2go
+
+- name: Ensure specified external repositories are installed
+  yum:
+    pkg: "{{ item }}"
+    state: installed
+  with_items: x2go_repositories
+  when: x2go_repositories is defined 
+
+- name: Ensure Ansible dependencies are installed
+  yum:
+    pkg: "{{ item }}"
+    state: installed
+  with_items:
+    - libselinux-python
+
+- name: Ensure specified packages are installed
+  yum:
+    pkg: "{{ item }}"
+    state: installed
+  with_items: x2go_install_packages
+  when: x2go_install_packages is defined
+
+- name: install the Windowmanger package group defined defaults/main.yml or as variables
+  yum: name="@{{ x2go_windowmanager }}" state=present
+
+- name: Make sure user specified services can pass through firewall
+  firewalld: service="{{ item }}" permanent=true state=enabled
+  with_items: x2go_firewall_allow_services
+  when: x2go_firewall_allow_services is defined
+  notify:
+    - restart firewalld
+
+ 
